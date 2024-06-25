@@ -25,26 +25,34 @@
             required
           ></v-radio>
         </v-radio-group>
-        <div v-if="selectedPaymentOption === 'Cartão de Crédito'">
+        <div v-if="selectedPaymentOption === 'Cartão de Crédito'" >
           <v-card-title>Insira os dados do cartão</v-card-title>
           <v-text-field
             label="Nome no Cartão"
             v-model="creditCardName"
+            :error-messages='cardNameError'
             required
           ></v-text-field>
           <v-text-field
             label="Número do Cartão"
             v-model="creditCardNumber"
+            :error-messages='cardNumberError'
+            v-mask="'#### #### #### ####'"
             required
           ></v-text-field>
           <v-text-field
             label="Código de Segurança"
             v-model="creditCardSecurityCode"
+            :error-messages='cardSecurityCodeError'
+            v-mask="'###'"
             required
           ></v-text-field>
           <v-text-field
             label="Data de Validade"
             v-model="creditCardExpiryDate"
+            :error-messages='cardExpiryDateError'
+            v-mask="'##/##'"
+            placeholder='mm/aa'
             required
           ></v-text-field>
         </div>
@@ -77,9 +85,24 @@ export default {
       radioError: "",
       uniqueId: "",
       code: "",
+      missingField: "",
     };
   },
   methods: {
+    // Validate credit card fields
+    validateCreditCardFields() {
+      this.cardNameError = this.creditCardName ? "" : "Nome no Cartão é obrigatório";
+      this.cardNumberError = this.creditCardNumber ? "" : "Número do Cartão é obrigatório";
+      this.cardSecurityCodeError = this.creditCardSecurityCode ? "" : "Código de Segurança é obrigatório";
+      this.cardExpiryDateError = this.creditCardExpiryDate ? "" : "Data de Validade é obrigatória";
+
+      return !(
+        this.cardNameError ||
+        this.cardNumberError ||
+        this.cardSecurityCodeError ||
+        this.cardExpiryDateError
+      );
+    },
     // Gather all payment options in offer
     fetchPaymentOptions() {
       fetch(`https://api.deepspacestore.com/offers/${this.$route.params.id}/`)
@@ -105,31 +128,57 @@ export default {
       const cleanedCpf = cpf.replace(/\D/g, "");
       if (
         cleanedCpf === "" ||
-        !(cleanedCpf.length === 11) ||
-        cleanedCpf === "00000000000"
+        !(cleanedCpf.length === 11)
       ) {
         return false;
       }
       return true;
     },
+
     // Gather all the data from user, address and payment.
     // Then make the validation for user CPF and payment option.
     // After that, the POST request is made.
     submitPaymentForm() {
       // Gather all the necessary data
       this.uniqueId = this.generateUniqueId();
-      const paymentData = {
-        paymentOption: this.selectedPaymentOption,
-        creditCardNumber: this.creditCardNumber,
-        creditCardName: this.creditCardName,
-        creditCardSecurityCode: this.creditCardSecurityCode,
-        creditCardExpiryDate: this.creditCardExpiryDate,
-        id: this.uniqueId,
-      };
+
+      if (!this.validateCpf(this.userCpf)) {
+        this.cpfError = "CPF é obrigatório";
+        return;
+      }
+
+      if (this.selectedPaymentOption === null) {
+        this.radioError = "Escolha um meio de pagamento";
+        return;
+      }
+
       if (
-        this.validateCpf(this.userCpf) &&
-        this.selectedPaymentOption !== null
+        this.selectedPaymentOption === "Cartão de Crédito" &&
+        !this.validateCreditCardFields()
       ) {
+        this.cardNameError = this.creditCardName ? "" : "Nome no Cartão é obrigatório";
+      this.cardNumberError = this.creditCardNumber ? "" : "Número do Cartão é obrigatório";
+      this.cardSecurityCodeError = this.creditCardSecurityCode ? "" : "Código de Segurança é obrigatório";
+      this.cardExpiryDateError = this.creditCardExpiryDate ? "" : "Data de Validade é obrigatória";
+        return;
+      }
+
+      // if (
+      //   this.validateCpf(this.userCpf) &&
+      //   this.selectedPaymentOption !== null &&
+      //   (this.selectedPaymentOption === "Cartão de Crédito" &&
+      //     this.validateCreditCardFields())
+      // ) {
+        const paymentData = {
+          userCpf: this.userCpf,
+          paymentOption: this.selectedPaymentOption,
+          creditCardNumber: this.creditCardNumber,
+          creditCardName: this.creditCardName,
+          creditCardSecurityCode: this.creditCardSecurityCode,
+          creditCardExpiryDate: this.creditCardExpiryDate,
+          id: this.uniqueId,
+        };
+
         // Make the POST request
         fetch(`https://api.deepspacestore.com/offers/${this.$route.params.id}/create_order`, {
           method: "POST",
@@ -142,23 +191,22 @@ export default {
             payment: paymentData,
           }),
         })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
+          .then(() => {
             // Button redirects to /compra-confirmada page
             this.$router.push({ name: "order-placed" });
             this.$store.commit("setPaymentData", paymentData);
           })
           .catch((error) => {
+            // If the user sets a wrong CPF, the error page is displayed
+            this.$router.push({ name: 'payment-error', params: { id: this.$route.params.id } });
             console.error("Error submitting payment form:", error);
           });
-      } else {
-        this.cpfError = "CPF é obrigatório";
-        this.selectedPaymentOption === null
-          ? (this.radioError = "Escolha um meio de pagamento")
-          : (this.radioError = "");
-      }
+      // } else {
+        // this.validateCpf(this.userCpf) ? this.cpfError = "" : this.cpfError = "CPF é obrigatório";
+        // this.selectedPaymentOption === null
+        //   ? (this.radioError = "Escolha um meio de pagamento")
+        //   : (this.radioError = "");
+      // }
     },
     // Rule for the CPF input
     checkUserCpf() {
@@ -174,7 +222,6 @@ export default {
     ...mapState({
       userData: (state) => state.userData,
       addressData: (state) => state.addressData,
-      orderCode: (state) => state.orderCode,
     }),
     // Enables the form if the address is valid
     isDisabled() {

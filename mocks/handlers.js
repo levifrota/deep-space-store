@@ -29,10 +29,15 @@ export const handlers = [
     return HttpResponse.json(offers);
   }),
 
-  http.post("https://api.deepspacestore.com/offers/:offerCode/create_order", ({ request }) => {
-    const requestBody = request.json();
-    return HttpResponse.json({
-      content: requestBody,
-    });
+  http.post("https://api.deepspacestore.com/offers/:offerCode/create_order", async ({ request }) => {
+    const requestBody = await request.json();
+
+    if (requestBody.payment.userCpf === "000.000.000-00") {
+      return HttpResponse.error();
+    } else {
+      return HttpResponse.json({
+        content: requestBody,
+      });
+    }
   }),
 ];

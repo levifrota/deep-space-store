@@ -69,18 +69,33 @@
         <v-img src="/qr-code.png" :height="300" alt="QR Code"></v-img>
       </v-card-item>
     </v-card>
-    <v-card v-if="paymentData.paymentOption === 'Boleto Bancário'">
+    <v-card class="mt-7" v-if="paymentData.paymentOption === 'Boleto Bancário'">
       <v-card-title>Prossiga o pagamento com os métodos abaixo. <br>O processamento pode durar até 2 dias úteis.</v-card-title>
-            <div>
-              <p ref="code">
-                26090.54834 30320.515635 74000.000005 8 96360000002000
-              </p>
-              <v-btn @click="copyText()">Copiar código</v-btn>
-            </div>
-            <v-img src="/boleto.png" :height="200" alt="Boleto"></v-img>
-
+        <div class="d-flex align-center flex-column">
+          <p ref="code">
+            26090.54834 30320.515635 74000.000005 8 96360000002000
+          </p>
+          <v-btn @click="copyText()">Copiar código</v-btn>
+        </div>
+        <v-img src="/boleto.png" :height="200" alt="Boleto"></v-img>
     </v-card>
   </v-container>
+  <v-snackbar
+    v-model="snackbar"
+    :timeout='2000'
+  >
+    Código copiado!
+
+    <template v-slot:actions>
+      <v-btn
+        color="green"
+        variant="text"
+        @click="snackbar = false"
+      >
+        Fechar
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script>
@@ -92,6 +107,9 @@ export default {
   components: {
     OfferDetails,
   },
+  data: () => ({
+    snackbar: false,
+  }),
   computed: {
     // Calls the state variables
     ...mapState({
@@ -124,6 +142,7 @@ export default {
       tempInput.select();
       document.execCommand("copy");
       document.body.removeChild(tempInput);
+      this.snackbar = true;
     },
   },
 };

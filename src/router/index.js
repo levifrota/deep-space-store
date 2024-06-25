@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeCheckout from "../views/HomeCheckout.vue";
 import NotFound from "../views/NotFound.vue";
 import OrderPlaced from "../views/OrderPlaced.vue";
-import { offers } from "../../mocks/handlers.js"; // Importe a lista de ofertas
+import PaymentError from "../views/PaymentError.vue";
+import { offers } from "../../mocks/handlers.js";
 
 const isValidOfferCode = (offerCode) => {
   return offers.some((offer) => offer.id.toLowerCase() === offerCode.toLowerCase());
@@ -31,6 +32,11 @@ const routes = [
     name: "order-placed",
     component: OrderPlaced,
   },
+  {
+    path: "/cpf-invalido",
+    name: "payment-error",
+    component: PaymentError,
+  }
 ];
 
 const router = createRouter({
