@@ -65,6 +65,7 @@ export default {
         this.zipCodeError = "Digite um CEP válido";
       }
     },
+    // This method fetches the viacep API to validate the CEP code
     fetchAddressDetails() {
       const zipCode = this.address.zipCode.replace(/\D/g, ""); // Remove non-numeric characters
       if (zipCode.length === 8) {

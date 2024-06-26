@@ -25,34 +25,34 @@
             required
           ></v-radio>
         </v-radio-group>
-        <div v-if="selectedPaymentOption === 'Cartão de Crédito'" >
+        <div v-if="selectedPaymentOption === 'Cartão de Crédito'">
           <v-card-title>Insira os dados do cartão</v-card-title>
           <v-text-field
             label="Nome no Cartão"
             v-model="creditCardName"
-            :error-messages='cardNameError'
+            :error-messages="cardNameError"
             required
           ></v-text-field>
           <v-text-field
             label="Número do Cartão"
             v-model="creditCardNumber"
-            :error-messages='cardNumberError'
+            :error-messages="cardNumberError"
             v-mask="'#### #### #### ####'"
             required
           ></v-text-field>
           <v-text-field
             label="Código de Segurança"
             v-model="creditCardSecurityCode"
-            :error-messages='cardSecurityCodeError'
+            :error-messages="cardSecurityCodeError"
             v-mask="'###'"
             required
           ></v-text-field>
           <v-text-field
             label="Data de Validade"
             v-model="creditCardExpiryDate"
-            :error-messages='cardExpiryDateError'
+            :error-messages="cardExpiryDateError"
             v-mask="'##/##'"
-            placeholder='mm/aa'
+            placeholder="mm/aa"
             required
           ></v-text-field>
         </div>
@@ -86,22 +86,43 @@ export default {
       uniqueId: "",
       code: "",
       missingField: "",
+      errors: {},
     };
   },
   methods: {
-    // Validate credit card fields
+    // Display credit card input error messages
     validateCreditCardFields() {
-      this.cardNameError = this.creditCardName ? "" : "Nome no Cartão é obrigatório";
-      this.cardNumberError = this.creditCardNumber ? "" : "Número do Cartão é obrigatório";
-      this.cardSecurityCodeError = this.creditCardSecurityCode ? "" : "Código de Segurança é obrigatório";
-      this.cardExpiryDateError = this.creditCardExpiryDate ? "" : "Data de Validade é obrigatória";
+      let isValid = true;
 
-      return !(
-        this.cardNameError ||
-        this.cardNumberError ||
-        this.cardSecurityCodeError ||
-        this.cardExpiryDateError
-      );
+      if (!this.creditCardName) {
+        this.cardNameError = "Nome no Cartão é obrigatório";
+        isValid = false;
+      } else {
+        this.cardNameError = "";
+      }
+
+      if (!this.creditCardNumber) {
+        this.cardNumberError = "Número do Cartão é obrigatório";
+        isValid = false;
+      } else {
+        this.cardNumberError = "";
+      }
+
+      if (!this.creditCardSecurityCode) {
+        this.cardSecurityCodeError = "Código de Segurança é obrigatório";
+        isValid = false;
+      } else {
+        this.cardSecurityCodeError = "";
+      }
+
+      if (!this.creditCardExpiryDate) {
+        this.cardExpiryDateError = "Data de Validade é obrigatória";
+        isValid = false;
+      } else {
+        this.cardExpiryDateError = "";
+      }
+
+      return isValid;
     },
     // Gather all payment options in offer
     fetchPaymentOptions() {
@@ -123,13 +144,10 @@ export default {
     generateUniqueId() {
       return "#" + Math.random().toString(36).substring(2, 7);
     },
-    //Method to validate CPF
+    // Method to validate CPF
     validateCpf(cpf) {
       const cleanedCpf = cpf.replace(/\D/g, "");
-      if (
-        cleanedCpf === "" ||
-        !(cleanedCpf.length === 11)
-      ) {
+      if (cleanedCpf === "" || !(cleanedCpf.length === 11)) {
         return false;
       }
       return true;
@@ -151,36 +169,30 @@ export default {
         this.radioError = "Escolha um meio de pagamento";
         return;
       }
+      console.log('validate', this.validateCreditCardFields());
 
+      // Display error messages
       if (
         this.selectedPaymentOption === "Cartão de Crédito" &&
         !this.validateCreditCardFields()
       ) {
-        this.cardNameError = this.creditCardName ? "" : "Nome no Cartão é obrigatório";
-      this.cardNumberError = this.creditCardNumber ? "" : "Número do Cartão é obrigatório";
-      this.cardSecurityCodeError = this.creditCardSecurityCode ? "" : "Código de Segurança é obrigatório";
-      this.cardExpiryDateError = this.creditCardExpiryDate ? "" : "Data de Validade é obrigatória";
         return;
       }
 
-      // if (
-      //   this.validateCpf(this.userCpf) &&
-      //   this.selectedPaymentOption !== null &&
-      //   (this.selectedPaymentOption === "Cartão de Crédito" &&
-      //     this.validateCreditCardFields())
-      // ) {
-        const paymentData = {
-          userCpf: this.userCpf,
-          paymentOption: this.selectedPaymentOption,
-          creditCardNumber: this.creditCardNumber,
-          creditCardName: this.creditCardName,
-          creditCardSecurityCode: this.creditCardSecurityCode,
-          creditCardExpiryDate: this.creditCardExpiryDate,
-          id: this.uniqueId,
-        };
+      const paymentData = {
+        userCpf: this.userCpf,
+        paymentOption: this.selectedPaymentOption,
+        creditCardNumber: this.creditCardNumber,
+        creditCardName: this.creditCardName,
+        creditCardSecurityCode: this.creditCardSecurityCode,
+        creditCardExpiryDate: this.creditCardExpiryDate,
+        id: this.uniqueId,
+      };
 
-        // Make the POST request
-        fetch(`https://api.deepspacestore.com/offers/${this.$route.params.id}/create_order`, {
+      // Make the POST request
+      fetch(
+        `https://api.deepspacestore.com/offers/${this.$route.params.id}/create_order`,
+        {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -190,23 +202,21 @@ export default {
             address: this.addressData,
             payment: paymentData,
           }),
+        }
+      )
+        .then(() => {
+          // Button redirects to /compra-confirmada page
+          this.$router.push({ name: "order-placed" });
+          this.$store.commit("setPaymentData", paymentData);
         })
-          .then(() => {
-            // Button redirects to /compra-confirmada page
-            this.$router.push({ name: "order-placed" });
-            this.$store.commit("setPaymentData", paymentData);
-          })
-          .catch((error) => {
-            // If the user sets a wrong CPF, the error page is displayed
-            this.$router.push({ name: 'payment-error', params: { id: this.$route.params.id } });
-            console.error("Error submitting payment form:", error);
+        .catch((error) => {
+          // If the user sets a wrong CPF, the error page is displayed
+          this.$router.push({
+            name: "payment-error",
+            params: { id: this.$route.params.id },
           });
-      // } else {
-        // this.validateCpf(this.userCpf) ? this.cpfError = "" : this.cpfError = "CPF é obrigatório";
-        // this.selectedPaymentOption === null
-        //   ? (this.radioError = "Escolha um meio de pagamento")
-        //   : (this.radioError = "");
-      // }
+          console.error("Error submitting payment form:", error);
+        });
     },
     // Rule for the CPF input
     checkUserCpf() {
@@ -233,7 +243,7 @@ export default {
   },
   mounted() {
     this.fetchPaymentOptions();
-  }
+  },
 };
 </script>
 

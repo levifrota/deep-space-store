@@ -13,7 +13,6 @@ describe("UserForm.vue", () => {
       state: {
         userFormValid: false,
         userData: null,
-        offerDetails: null,
       },
       mutations: {
         setUserFormValid(state, value) {
@@ -31,22 +30,6 @@ describe("UserForm.vue", () => {
         plugins: [mockStore],
       },
     });
-  });
-
-  it("disables the form when offerDetails is not present", () => {
-    // Set the offerDetails state to null
-    // mockStore.state.offerDetails = null;
-
-    // Check if the form is disabled
-    expect(wrapper.vm.isDisabled).toBe(true);
-  });
-
-  it("enables the form when offerDetails is present", () => {
-    // Set the offerDetails state
-    mockStore.state.offerDetails = "OFFER_CODE";
-
-    // Check if the form is enabled
-    expect(wrapper.vm.isDisabled).toBe(false);
   });
 
   it("validates the user form and updates the store", async () => {

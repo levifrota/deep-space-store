@@ -47,15 +47,12 @@ export default {
           return response.json();
         })
         .then(data => {
-          if (Array.isArray(data) && data.length > 0) {
             this.offerDetails = data[0];  // Access the first element of the array
             this.$store.commit("setOfferDetails", this.offerDetails);
-          } else {
-            console.error('Error: Data is not in the expected format');
-          }
         })
         .catch(error => console.error('Error: ', error));
     },
+    //Method to calculate the total price of items
     totalNewPrice() {
       if (this.offerDetails && this.offerDetails.items) {
         return this.offerDetails.items.reduce(
@@ -67,7 +64,7 @@ export default {
     },
   },
   mounted() {
-    this.getProducts(); // Initial fetch when component mounts
+    this.getProducts(); // Get products in API when the component is mounted.
   },
 };
 </script>

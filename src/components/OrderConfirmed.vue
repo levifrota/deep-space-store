@@ -53,23 +53,23 @@
     <OfferDetails :offerDetails="offerDetails" :totalNewPrice="totalNewPrice" />
   </div>
 
-    <v-card v-if="paymentData.paymentOption === 'Pix'" class="mt-7 w-60">
+    <v-card v-if="paymentData.paymentOption === 'Pix'" class="mt-7 payment-selected">
       <v-card-title
         >Prossiga o pagamento com os métodos abaixo. <br>O processamento pode durar até 30 minutos.
     </v-card-title>
       <v-card-item>
         <h3>Código Copia e Cola</h3>
-        <div class="copy-code">
+        <div>
           <p ref="code">
             00020126580014BR.GOV.BCB.PIX01365354d1a3-62a5-4c6b-bf8d-7511acfbdb045204000053039865802BR5925Gideao
             Levi de Oliveira F6009SAO PAULO62140510Eqy8WV1jgS6304F02B
           </p>
           <v-btn @click="copyText()">Copiar código</v-btn>
         </div>
-        <v-img src="/qr-code.png" :height="300" alt="QR Code"></v-img>
+        <v-img src="/qr-code.png" :height="300" :width="200" alt="QR Code"></v-img>
       </v-card-item>
     </v-card>
-    <v-card class="mt-7" v-if="paymentData.paymentOption === 'Boleto Bancário'">
+    <v-card class="mt-7 payment-selected" v-else-if="paymentData.paymentOption === 'Boleto Bancário'">
       <v-card-title>Prossiga o pagamento com os métodos abaixo. <br>O processamento pode durar até 2 dias úteis.</v-card-title>
         <div class="d-flex align-center flex-column">
           <p ref="code">
@@ -154,6 +154,9 @@ export default {
   align-items: flex-start;
   flex-wrap: wrap;
 }
+.payment-selected {
+  width: 40vw;
+}
 @media (max-width: 880px) {
   .order-confirmed {
     flex-direction: column-reverse;
@@ -161,6 +164,9 @@ export default {
   .order-confirmed h1 {
     text-align: center;
     padding: 0 !important;
+  }
+  .payment-selected {
+    width: 60%;
   }
 }
 </style>
