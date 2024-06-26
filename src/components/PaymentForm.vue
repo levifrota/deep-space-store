@@ -169,7 +169,6 @@ export default {
         this.radioError = "Escolha um meio de pagamento";
         return;
       }
-      console.log('validate', this.validateCreditCardFields());
 
       // Display error messages
       if (

@@ -109,28 +109,6 @@ describe("E2E test", () => {
     await expect(pixFields).toBeDisplayed();
   });
 
-    // it("should update url and display bar code when its selected", async () => {
-    //   browser.url(setUrl);
-    //   await browser.pause(3000);
-
-    //   // Select a different payment option
-    //   const otherPaymentOption = $("aria/Boleto Bancário");
-    //   await otherPaymentOption.click();
-
-    //   //When it clicks the button, it must be redirected to the success page
-    //   const finishOrder = $("button=Finalizar Pedido");
-    //   await finishOrder.click();
-
-    //   await browser.pause(3000);
-    //   const currentUrl = await browser.getUrl();
-
-    //   // Check if the additional fields for the selected payment option are displayed
-    //   const pixFields = $("aria/Código Copia e Cola");
-
-    //   expect(currentUrl).toContain("/compra-confirmada");
-    //   await expect(pixFields).toBeDisplayed();
-    // });
-
   it("should display confirmation order", async () => {
     // The success page must display the order details
     const orderDetails = $("aria/Detalhes do pedido:");
@@ -142,14 +120,4 @@ describe("E2E test", () => {
     await expect(orderDetails).toBeDisplayed();
     await expect(orderItems).toBeDisplayed();
   });
-
-  // it("should display bar code", async () => {
-  //   // Select a different payment option
-  //   const otherPaymentOption = $("aria/Boleto Bancário");
-  //   otherPaymentOption.click();
-
-  //   // Check if the additional fields for the selected payment option are displayed
-  //   const billFields = $("aria/Código do Boleto");
-  //   await expect(billFields).toBeDisplayed();
-  // });
 });
